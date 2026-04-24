@@ -1,11 +1,11 @@
 services:
   db:
     image: postgres:15
-    container_name:avenyx-db
+    container_name: avenyx-db
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB:avenyx
+      POSTGRES_DB: avenyx
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -20,7 +20,7 @@ services:
     build:
       context: ../api
       dockerfile: Dockerfile
-    container_name:avenyx-api
+    container_name: avenyx-api
     environment:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/avenyx
       JWT_SECRET: ${JWT_SECRET:-avenyx-super-secret-key-change-in-production}
@@ -31,7 +31,9 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - apk_storage:/storage/apk
+      - type: bind
+        source: ./apk_storage
+        target: /storage/apk
     depends_on:
       db:
         condition: service_healthy
@@ -42,7 +44,7 @@ services:
     build:
       context: ../frontend
       dockerfile: Dockerfile
-    container_name:avenyx-frontend
+    container_name: avenyx-frontend
     environment:
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3000}
     ports:
@@ -54,17 +56,13 @@ services:
     build:
       context: ../admin
       dockerfile: Dockerfile
-    container_name:avenyx-admin
+    container_name: avenyx-admin
     environment:
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3000}
     ports:
       - "3002:3002"
     networks:
       -avenyx-network
-
-volumes:
-  postgres_data:
-  apk_storage:
 
 networks:
   avenyx-network:
